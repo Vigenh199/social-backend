@@ -10,5 +10,7 @@ services:
       POSTGRES_DB: social
     networks:
       - devdbs
+    volumes:
+      - ~/psql-data:/var/lib/postgresql/data
 networks:
   devdbs:

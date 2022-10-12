@@ -11,16 +11,16 @@ datasource db {
 }
 
 model User {
-  user_id Int @id @default(autoincrement())
+  user_id    Int      @id @default(autoincrement())
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  email String
+  email    String @unique
   password String
 
   first_name String
-  last_name String
-  age Int
+  last_name  String
+  age        Int
 
   @@map("users")
 }
