@@ -12,5 +12,15 @@ services:
       - devdbs
     volumes:
       - ~/psql-data:/var/lib/postgresql/data
+  test-db:
+    image: postgres
+    ports:
+      - 5435:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: social
+    networks:
+      - devdbs
 networks:
   devdbs:
