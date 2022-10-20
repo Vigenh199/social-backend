@@ -23,17 +23,16 @@ export class AuthService {
     try {
       const hash = await argon.hash(dto.password);
 
+      delete dto.password;
+
       const user = await this.prisma.user.create({
         data: {
-          email: dto.email,
+          ...dto,
           password: hash,
-          first_name: dto.firstName,
-          last_name: dto.lastName,
-          age: dto.age,
         },
       });
 
-      return this.signToken(user.user_id, user.email);
+      return this.signToken(user.userId, user.email);
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {
         if (err.code === 'P2002') {
@@ -66,7 +65,7 @@ export class AuthService {
       );
     }
 
-    return this.signToken(user.user_id, user.email);
+    return this.signToken(user.userId, user.email);
   }
 
   async signToken(
