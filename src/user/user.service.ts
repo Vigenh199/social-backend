@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { EditUserDto, GetUsersDto } from './dto';
@@ -79,5 +83,64 @@ export class UserService {
     delete user.password;
 
     return user;
+  }
+
+  async getFriendRequests(userId: number) {
+    const friendRequests = await this.prisma
+      .$queryRaw`SELECT "userId", "firstName", "lastName", age FROM friendships LEFT JOIN users ON friendships."friendRequestId" = users."userId" WHERE "friendAcceptId"=${userId} AND accepted=FALSE;`;
+
+    return friendRequests;
+  }
+
+  async addFriendRequest(
+    requesterUserId: number,
+    receiverUserId: number,
+  ) {
+    if (requesterUserId === receiverUserId) {
+      throw new BadRequestException('Invalid operation');
+    }
+
+    const receiverUser = await this.prisma.user.findUnique({
+      where: {
+        userId: receiverUserId,
+      },
+    });
+
+    if (!receiverUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    const friendshipCount: number =
+      await this.prisma.friendship.count({
+        where: {
+          OR: [
+            {
+              friendRequestId: requesterUserId,
+              friendAcceptId: receiverUserId,
+            },
+            {
+              friendRequestId: receiverUserId,
+              friendAcceptId: requesterUserId,
+            },
+          ],
+        },
+      });
+
+    if (friendshipCount > 0) {
+      throw new BadRequestException('Friendship already exists');
+    }
+
+    const friendship = await this.prisma.friendship.create({
+      data: {
+        friendRequestId: requesterUserId,
+        friendAcceptId: receiverUserId,
+      },
+    });
+
+    console.log(friendship);
+
+    return {
+      success: true,
+    };
   }
 }

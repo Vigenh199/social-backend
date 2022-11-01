@@ -18,9 +18,25 @@ model User {
   email    String @unique
   password String
 
+  age       Int
   firstName String
   lastName  String
-  age       Int
+
+  friendRequests Friendship[] @relation("friendRequest")
+  friendAccepts  Friendship[] @relation("friendAccept")
 
   @@map("users")
+}
+
+model Friendship {
+  friendRequest   User @relation("friendRequest", fields: [friendRequestId], references: [userId])
+  friendRequestId Int
+
+  friendAccept   User @relation("friendAccept", fields: [friendAcceptId], references: [userId])
+  friendAcceptId Int
+
+  accepted Boolean @default(false)
+
+  @@id([friendRequestId, friendAcceptId])
+  @@map("friendships")
 }

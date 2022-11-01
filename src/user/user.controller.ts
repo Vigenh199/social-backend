@@ -3,7 +3,10 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -39,5 +42,21 @@ export class UserController {
     @Body() dto: EditUserDto,
   ) {
     return this.userService.editUser(userId, dto);
+  }
+
+  @Get('me/friend-requests')
+  getFriendRequests(@GetUser('userId') userId: number) {
+    return this.userService.getFriendRequests(userId);
+  }
+
+  @Post(':id/friend-requests')
+  addFriendRequest(
+    @GetUser('userId') requesterUserId: number,
+    @Param('id', ParseIntPipe) receiverUserId: number,
+  ) {
+    return this.userService.addFriendRequest(
+      requesterUserId,
+      receiverUserId,
+    );
   }
 }
