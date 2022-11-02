@@ -143,4 +143,42 @@ export class UserService {
       success: true,
     };
   }
+
+  async getAllFriends(userId: number, pagination: Pagination) {
+    const friends = await this.prisma
+      .$queryRaw`SELECT "userId", "firstName", "lastName", age FROM friendships LEFT JOIN users ON friendships."friendRequestId" = users."userId" WHERE "friendAcceptId"=${userId} AND accepted=TRUE LIMIT ${pagination.limit} OFFSET ${pagination.skip};`;
+
+    return friends;
+  }
+
+  async acceptFriendRequest(
+    receiverUserId: number,
+    requesterUserId: number,
+  ) {
+    await this.prisma.friendship.update({
+      where: {
+        friendRequestId_friendAcceptId: {
+          friendRequestId: requesterUserId,
+          friendAcceptId: receiverUserId,
+        },
+      },
+      data: {
+        accepted: true,
+      },
+    });
+  }
+
+  async declineFriendRequest(
+    receiverUserId: number,
+    requesterUserId: number,
+  ) {
+    await this.prisma.friendship.delete({
+      where: {
+        friendRequestId_friendAcceptId: {
+          friendRequestId: requesterUserId,
+          friendAcceptId: receiverUserId,
+        },
+      },
+    });
+  }
 }

@@ -2,7 +2,10 @@ import { User } from '@prisma/client';
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -57,6 +60,37 @@ export class UserController {
     return this.userService.addFriendRequest(
       requesterUserId,
       receiverUserId,
+    );
+  }
+
+  @Get('/me/friends')
+  getAllFriends(
+    @GetUser('userId') userId: number,
+    @GetUsersPagination() pagination: Pagination,
+  ) {
+    return this.userService.getAllFriends(userId, pagination);
+  }
+
+  @Patch('/:id/friends')
+  acceptFriendRequest(
+    @GetUser('userId') receiverUserId: number,
+    @Param('id', ParseIntPipe) requesterUserId: number,
+  ) {
+    return this.userService.acceptFriendRequest(
+      receiverUserId,
+      requesterUserId,
+    );
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('/:id/friends')
+  declineFriendRequest(
+    @GetUser('userId') receiverUserId: number,
+    @Param('id', ParseIntPipe) requesterUserId: number,
+  ) {
+    return this.userService.declineFriendRequest(
+      receiverUserId,
+      requesterUserId,
     );
   }
 }
